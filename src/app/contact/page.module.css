@@ -1,0 +1,10 @@
+.addButton {
+    border-radius: 8px;
+}
+
+.headerContent {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 14px;
+}
