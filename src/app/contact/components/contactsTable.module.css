@@ -1,0 +1,12 @@
+.tableRow {
+    height: 60px;
+}
+
+.deleteButton {
+    border-radius: 8px;
+}
+
+.activeText {
+    display: inline;
+    margin-left: 8px;
+}
