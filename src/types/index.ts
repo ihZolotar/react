@@ -5,4 +5,6 @@ export interface Contact {
     email: string;
     phone: string;
     active: boolean;
+    created_at?: string;
+    updated_at?: string;
 }
