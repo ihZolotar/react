@@ -44,7 +44,6 @@ interface ContactsTableProps {
     loading?: boolean;
 }
 
-// Add type for page change event
 type PageChangeEvent = React.MouseEvent<HTMLButtonElement> | null;
 
 const DeleteConfirmDialog = ({
@@ -207,7 +206,6 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
         setContactToDelete(null);
     }, []);
 
-    // Мемоізовані значення для оптимізації ререндерингу
     const sortedContacts = useMemo(() => {
         return [...contacts].sort((a, b) => {
             const valueA = a[sortField]?.toLowerCase() ?? '';
@@ -228,7 +226,6 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
         );
     }, [sortedContacts, page, rowsPerPage]);
 
-    // Рендеринг для станів завантаження та пустого списку
     if (loading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" p={4}>
@@ -245,7 +242,6 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
         );
     }
 
-    // Компонент пагінації, який використовується в обох варіантах (мобільному та десктопному)
     const paginationComponent = (
         <TablePagination
             component="div"
@@ -259,7 +255,6 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
         />
     );
 
-    // Рендеринг для мобільного виду
     if (isMobile) {
         return (
             <>
@@ -282,7 +277,6 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
         );
     }
 
-    // Рендеринг для десктопного виду
     return (
         <>
             <TableContainer component={Paper}>

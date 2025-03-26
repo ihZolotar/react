@@ -39,7 +39,6 @@ const AddContactForm: React.FC<AddContactFormProps> = ({
                 onClose();
             } catch (error) {
                 console.error('Error submitting form:', error);
-                // Помилку буде оброблено в батьківському компоненті
             } finally {
                 setSubmitting(false);
             }
@@ -47,7 +46,6 @@ const AddContactForm: React.FC<AddContactFormProps> = ({
         enableReinitialize: true,
     });
 
-    // При закритті діалогу скидаємо форму
     const handleClose = () => {
         formik.resetForm();
         onClose();

@@ -74,7 +74,7 @@ const ContactsPage = () => {
             setSubmitting(true);
             await addContactHandler(values);
             showNotification('Contact added successfully', 'success');
-            setAddDialogOpen(false); // Закриваємо діалог при успішному додаванні
+            setAddDialogOpen(false);
         } catch (err) {
             showNotification('Failed to add contact', 'error');
         } finally {
@@ -87,7 +87,7 @@ const ContactsPage = () => {
             setSubmitting(true);
             await updateContactHandler(id, values);
             showNotification('Contact updated successfully', 'success');
-            setEditDialogOpen(false); // Закриваємо діалог при успішному оновленні
+            setEditDialogOpen(false);
         } catch (err) {
             showNotification('Failed to update contact', 'error');
         } finally {

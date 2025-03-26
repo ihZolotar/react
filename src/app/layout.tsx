@@ -32,7 +32,6 @@ interface NavItem {
     icon: React.ReactNode;
 }
 
-// Виносимо компонент помилки окремо для кращої організації коду
 const ErrorFallback = ({ error }: { error: Error }) => (
     <Container sx={{ py: 5 }}>
         <Typography variant="h5" color="error" gutterBottom>
@@ -50,13 +49,11 @@ const ErrorFallback = ({ error }: { error: Error }) => (
     </Container>
 );
 
-// Виносимо навігаційні елементи у константу поза компонентом
 const NAV_ITEMS: NavItem[] = [
     { name: 'Home', path: '/', icon: <MdHome /> },
     { name: 'Contacts', path: '/contact', icon: <MdContacts /> },
 ];
 
-// Компонент навігаційної панелі
 const NavigationBar = ({
                            isMobile,
                            handleDrawerToggle,
@@ -132,7 +129,6 @@ const NavigationBar = ({
     </AppBar>
 );
 
-// Компонент бічного меню
 const SideDrawer = ({
                         mobileOpen,
                         handleDrawerToggle,
@@ -142,7 +138,6 @@ const SideDrawer = ({
     handleDrawerToggle: () => void;
     pathname: string;
 }) => {
-    // Вміст бічного меню
     const drawerContent = (
         <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
             <Typography variant="h6" sx={{ my: 2 }}>
@@ -193,7 +188,6 @@ const SideDrawer = ({
     );
 };
 
-// Компонент підвалу
 const Footer = () => (
     <Box
         component="footer"
@@ -218,7 +212,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
-    // Мемоізуємо функцію щоб уникнути зайвих ререндерів дочірніх компонентів
     const handleDrawerToggle = React.useCallback(() => {
         setMobileOpen((prevState) => !prevState);
     }, []);

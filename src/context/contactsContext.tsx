@@ -11,17 +11,13 @@ import {
     searchContacts as searchContactsService,
 } from '@/services/contactsService';
 
-// Тип для контексту контактів
 interface ContactsContextType {
-    // Дані
     contacts: Contact[];
     selectedContact: Contact | null;
 
-    // Стани
     loading: boolean;
     error: string | null;
 
-    // Методи для операцій з контактами
     fetchContacts: (activeOnly?: boolean) => Promise<void>;
     addContactHandler: (contactData: Omit<Contact, 'id'>) => Promise<Contact>;
     updateContactHandler: (id: string, contactData: Partial<Contact>) => Promise<void>;
@@ -32,10 +28,8 @@ interface ContactsContextType {
     searchContacts: (query: string) => Promise<void>;
 }
 
-// Створення контексту з початковим значенням undefined
 const ContactsContext = createContext<ContactsContextType | undefined>(undefined);
 
-// Хук для використання контексту
 export const useContacts = () => {
     const context = useContext(ContactsContext);
     if (context === undefined) {
@@ -44,24 +38,20 @@ export const useContacts = () => {
     return context;
 };
 
-// Props для провайдера
 interface ContactsProviderProps {
     children: ReactNode;
 }
 
-// Компонент-провайдер контексту
 export const ContactsProvider: React.FC<ContactsProviderProps> = ({children}) => {
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Завантаження контактів при першому рендері
     useEffect(() => {
         fetchContacts();
     }, []);
 
-    // Метод для завантаження контактів
     const fetchContacts = async (activeOnly = false) => {
         try {
             setLoading(true);
@@ -76,7 +66,6 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({children}) =>
         }
     };
 
-    // Метод для пошуку контактів
     const searchContacts = async (query: string) => {
         if (!query.trim()) {
             return fetchContacts();
@@ -95,7 +84,6 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({children}) =>
         }
     };
 
-    // Метод для додавання контакту
     const addContactHandler = async (contactData: Omit<Contact, 'id'>) => {
         try {
             setLoading(true);
@@ -112,7 +100,6 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({children}) =>
         }
     };
 
-    // Метод для оновлення контакту
     const updateContactHandler = async (id: string, contactData: Partial<Contact>) => {
         try {
             setLoading(true);
@@ -122,10 +109,11 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({children}) =>
                     contact.id === id ? {...contact, ...contactData} : contact
                 )
             );
-            // Якщо оновлюється вибраний контакт, також оновлюємо його
+
             if (selectedContact && selectedContact.id === id) {
                 setSelectedContact((prev) => (prev ? {...prev, ...contactData} : null));
             }
+
             setError(null);
         } catch (err) {
             setError('Failed to update contact');
@@ -136,16 +124,16 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({children}) =>
         }
     };
 
-    // Метод для видалення контакту
     const deleteContactHandler = async (id: string) => {
         try {
             setLoading(true);
             await deleteContact(id);
             setContacts((prev) => prev.filter((contact) => contact.id !== id));
-            // Якщо видаляється вибраний контакт, знімаємо вибір
+
             if (selectedContact && selectedContact.id === id) {
                 setSelectedContact(null);
             }
+
             setError(null);
         } catch (err) {
             setError('Failed to delete contact');
@@ -156,7 +144,6 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({children}) =>
         }
     };
 
-    // Метод для зміни статусу активності контакту
     const toggleActiveHandler = async (id: string, active: boolean) => {
         try {
             return await updateContactHandler(id, {active: !active});
@@ -166,7 +153,6 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({children}) =>
         }
     };
 
-    // Метод для отримання контакту за ID
     const getContact = async (id: string) => {
         try {
             setLoading(true);
@@ -182,7 +168,6 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({children}) =>
         }
     };
 
-    // Значення контексту
     const value = {
         contacts,
         selectedContact,

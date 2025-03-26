@@ -17,7 +17,7 @@ import { Contact } from '@/types';
 const contactsCollection = collection(db, 'contacts');
 
 /**
- * Обробка помилок Firebase
+ * Error handling for Firebase
  */
 const handleFirebaseError = (error: unknown, customMessage: string): Error => {
     console.error(customMessage, error);
@@ -30,7 +30,7 @@ const handleFirebaseError = (error: unknown, customMessage: string): Error => {
 };
 
 /**
- * Додає новий контакт до бази даних
+ * Adds a new contact to the database
  */
 export const addContact = async (contact: Omit<Contact, 'id'>): Promise<Contact> => {
     try {
@@ -48,7 +48,7 @@ export const addContact = async (contact: Omit<Contact, 'id'>): Promise<Contact>
 };
 
 /**
- * Отримує всі контакти з бази даних
+ * Gets all contacts from the database
  */
 export const getContacts = async (activeOnly = false): Promise<Contact[]> => {
     try {
@@ -76,7 +76,7 @@ export const getContacts = async (activeOnly = false): Promise<Contact[]> => {
 };
 
 /**
- * Отримує один контакт за ID
+ * Gets a contact by ID
  */
 export const getContactById = async (id: string): Promise<Contact | null> => {
     try {
@@ -97,13 +97,12 @@ export const getContactById = async (id: string): Promise<Contact | null> => {
 };
 
 /**
- * Оновлює існуючий контакт
+ * Updates an existing contact
  */
 export const updateContact = async (id: string, updatedData: Partial<Contact>): Promise<void> => {
     try {
         const contactDoc = doc(db, 'contacts', id);
 
-        // Перевіряємо, чи існує контакт
         const snapshot = await getDoc(contactDoc);
         if (!snapshot.exists()) {
             throw new Error(`Contact with id ${id} not found`);
@@ -119,14 +118,14 @@ export const updateContact = async (id: string, updatedData: Partial<Contact>): 
 };
 
 /**
- * Видаляє контакт
+ * Contact deletion
  */
 export const deleteContact = async (id: string): Promise<void> => {
     try {
         const contactDoc = doc(db, 'contacts', id);
 
-        // Перевіряємо, чи існує контакт
         const snapshot = await getDoc(contactDoc);
+
         if (!snapshot.exists()) {
             throw new Error(`Contact with id ${id} not found`);
         }
@@ -138,12 +137,10 @@ export const deleteContact = async (id: string): Promise<void> => {
 };
 
 /**
- * Пошук контактів за ім'ям, прізвищем або email
+ * Search contacts by name, surname or email
  */
 export const searchContacts = async (searchQuery: string): Promise<Contact[]> => {
     try {
-        // Firebase не має вбудованого повнотекстового пошуку
-        // Тому отримуємо всі контакти і фільтруємо на клієнті
         const snapshot = await getDocs(contactsCollection);
         const contacts = snapshot.docs.map((doc) => ({
             id: doc.id,

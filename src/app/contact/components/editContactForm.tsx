@@ -48,7 +48,6 @@ const EditContactForm: React.FC<EditContactFormProps> = ({
                 onClose();
             } catch (error) {
                 console.error('Error updating contact:', error);
-                // Помилку буде оброблено в батьківському компоненті
             } finally {
                 setSubmitting(false);
             }
@@ -56,7 +55,6 @@ const EditContactForm: React.FC<EditContactFormProps> = ({
         enableReinitialize: true,
     });
 
-    // Якщо контакту немає, не відображаємо форму
     if (!contact) return null;
 
     const handleClose = () => {
