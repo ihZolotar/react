@@ -11,34 +11,43 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import { Contact } from '@/types';
-import { createContactValidationSchema, newContactInitialValues } from '@/validation/contactSchema';
+import { createContactValidationSchema } from '@/validation/contactSchema';
 import ContactForm, { ContactFormValues } from './contactForm';
 
-interface AddContactFormProps {
+interface EditContactFormProps {
     open: boolean;
     onClose: () => void;
-    onSubmit: (values: Omit<Contact, 'id'>) => Promise<void>;
+    onSubmit: (id: string, values: Omit<Contact, 'id'>) => Promise<void>;
+    contact: Contact | null;
     contacts: Contact[];
     isSubmitting?: boolean;
 }
 
-const AddContactForm: React.FC<AddContactFormProps> = ({
-                                                           open,
-                                                           onClose,
-                                                           onSubmit,
-                                                           contacts,
-                                                           isSubmitting = false,
-                                                       }) => {
+const EditContactForm: React.FC<EditContactFormProps> = ({
+                                                             open,
+                                                             onClose,
+                                                             onSubmit,
+                                                             contact,
+                                                             contacts,
+                                                             isSubmitting = false,
+                                                         }) => {
     const formik = useFormik<ContactFormValues>({
-        initialValues: newContactInitialValues,
-        validationSchema: createContactValidationSchema(contacts),
-        onSubmit: async (values, { resetForm, setSubmitting }) => {
+        initialValues: {
+            first_name: contact?.first_name || '',
+            last_name: contact?.last_name || '',
+            email: contact?.email || '',
+            phone: contact?.phone || '',
+            active: contact?.active || true,
+        },
+        validationSchema: createContactValidationSchema(contacts, contact?.id),
+        onSubmit: async (values, { setSubmitting }) => {
+            if (!contact) return;
+
             try {
-                await onSubmit(values);
-                resetForm();
+                await onSubmit(contact.id, values);
                 onClose();
             } catch (error) {
-                console.error('Error submitting form:', error);
+                console.error('Error updating contact:', error);
                 // Помилку буде оброблено в батьківському компоненті
             } finally {
                 setSubmitting(false);
@@ -47,7 +56,9 @@ const AddContactForm: React.FC<AddContactFormProps> = ({
         enableReinitialize: true,
     });
 
-    // При закритті діалогу скидаємо форму
+    // Якщо контакту немає, не відображаємо форму
+    if (!contact) return null;
+
     const handleClose = () => {
         formik.resetForm();
         onClose();
@@ -56,7 +67,7 @@ const AddContactForm: React.FC<AddContactFormProps> = ({
     return (
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
             <form onSubmit={formik.handleSubmit}>
-                <DialogTitle>Add Contact</DialogTitle>
+                <DialogTitle>Edit Contact</DialogTitle>
                 <DialogContent>
                     <ContactForm formik={formik} />
                 </DialogContent>
@@ -71,7 +82,7 @@ const AddContactForm: React.FC<AddContactFormProps> = ({
                         disabled={formik.isSubmitting || isSubmitting}
                         startIcon={formik.isSubmitting || isSubmitting ? <CircularProgress size={20} /> : null}
                     >
-                        {formik.isSubmitting || isSubmitting ? 'Saving...' : 'Save'}
+                        {formik.isSubmitting || isSubmitting ? 'Saving...' : 'Save Changes'}
                     </Button>
                 </DialogActions>
             </form>
@@ -79,4 +90,4 @@ const AddContactForm: React.FC<AddContactFormProps> = ({
     );
 };
 
-export default AddContactForm;
+export default EditContactForm;
