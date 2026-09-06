@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack --port 3003",
+    "dev": "next dev --port 3003",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
@@ -16,7 +16,7 @@
     "@mui/material-nextjs": "^9.4.0",
     "firebase": "^11.1.0",
     "formik": "^2.4.9",
-    "next": "^15.2.4",
+    "next": "^16.3.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-error-boundary": "^5.0.0",
