@@ -17,8 +17,6 @@ import {
     Box,
     CircularProgress,
     TableSortLabel,
-    useMediaQuery,
-    useTheme,
     Card,
     CardContent,
     Chip,
@@ -31,7 +29,7 @@ import {
 import Grid from '@mui/material/Grid';
 import {MdEdit, MdDelete} from 'react-icons/md';
 import {Contact} from '@/types';
-import styles from './contactsTable.module.css';
+import styles from './ContactsTable.module.css';
 
 type SortOrder = 'asc' | 'desc';
 type SortField = 'first_name' | 'last_name' | 'email' | 'phone';
@@ -184,9 +182,6 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [contactToDelete, setContactToDelete] = useState<Contact | null>(null);
 
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
     const lastPage = Math.max(0, Math.ceil(contacts.length / rowsPerPage) - 1);
     const safePage = Math.min(page, lastPage);
 
@@ -277,35 +272,27 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25]}
-            labelRowsPerPage={isMobile ? "Rows:" : "Rows per page:"}
+            labelRowsPerPage={
+                <>
+                    <Box component="span" sx={{display: {xs: 'inline', sm: 'none'}}}>Rows:</Box>
+                    <Box component="span" sx={{display: {xs: 'none', sm: 'inline'}}}>Rows per page:</Box>
+                </>
+            }
         />
     );
 
-    if (isMobile) {
-        return (
-            <>
+    return (
+        <>
+            <Box sx={{display: {xs: 'block', sm: 'none'}}}>
                 <MobileContactsList
                     contacts={paginatedContacts}
                     onToggleActive={onToggleActive}
                     onEdit={onEdit}
                     onDeleteClick={handleDeleteClick}
                 />
+            </Box>
 
-                {paginationComponent}
-
-                <DeleteConfirmDialog
-                    open={deleteDialogOpen}
-                    contact={contactToDelete}
-                    onCancel={handleCancelDelete}
-                    onConfirm={handleConfirmDelete}
-                />
-            </>
-        );
-    }
-
-    return (
-        <>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} sx={{display: {xs: 'none', sm: 'block'}}}>
                 <Table aria-label="contacts table" role="grid">
                     <TableHead>
                         <TableRow>

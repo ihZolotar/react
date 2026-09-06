@@ -11,51 +11,40 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import { Contact } from '@/types';
-import { createContactValidationSchema } from '@/validation/contactSchema';
-import ContactForm, { ContactFormValues } from './contactForm';
+import { createContactValidationSchema, newContactInitialValues } from '@/validation/contactSchema';
+import ContactForm, { ContactFormValues } from './ContactForm';
 
-interface EditContactFormProps {
+interface AddContactFormProps {
     open: boolean;
     onClose: () => void;
-    onSubmit: (id: string, values: Omit<Contact, 'id'>) => Promise<void>;
-    contact: Contact | null;
+    onSubmit: (values: Omit<Contact, 'id'>) => Promise<void>;
     contacts: Contact[];
     isSubmitting?: boolean;
 }
 
-const EditContactForm: React.FC<EditContactFormProps> = ({
-                                                             open,
-                                                             onClose,
-                                                             onSubmit,
-                                                             contact,
-                                                             contacts,
-                                                             isSubmitting = false,
-                                                         }) => {
+const AddContactForm: React.FC<AddContactFormProps> = ({
+                                                           open,
+                                                           onClose,
+                                                           onSubmit,
+                                                           contacts,
+                                                           isSubmitting = false,
+                                                       }) => {
     const formik = useFormik<ContactFormValues>({
-        initialValues: {
-            first_name: contact?.first_name || '',
-            last_name: contact?.last_name || '',
-            email: contact?.email || '',
-            phone: contact?.phone || '',
-            active: contact?.active ?? true,
-        },
-        validationSchema: createContactValidationSchema(contacts, contact?.id),
-        onSubmit: async (values, { setSubmitting }) => {
-            if (!contact) return;
-
+        initialValues: newContactInitialValues,
+        validationSchema: createContactValidationSchema(contacts),
+        onSubmit: async (values, { resetForm, setSubmitting }) => {
             try {
-                await onSubmit(contact.id, values);
+                await onSubmit(values);
+                resetForm();
                 onClose();
             } catch (error) {
-                console.error('Error updating contact:', error);
+                console.error('Error submitting form:', error);
             } finally {
                 setSubmitting(false);
             }
         },
         enableReinitialize: true,
     });
-
-    if (!contact) return null;
 
     const handleClose = () => {
         formik.resetForm();
@@ -65,7 +54,7 @@ const EditContactForm: React.FC<EditContactFormProps> = ({
     return (
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
             <form onSubmit={formik.handleSubmit}>
-                <DialogTitle>Edit Contact</DialogTitle>
+                <DialogTitle>Add Contact</DialogTitle>
                 <DialogContent>
                     <ContactForm formik={formik} />
                 </DialogContent>
@@ -80,7 +69,7 @@ const EditContactForm: React.FC<EditContactFormProps> = ({
                         disabled={formik.isSubmitting || isSubmitting}
                         startIcon={formik.isSubmitting || isSubmitting ? <CircularProgress size={20} /> : null}
                     >
-                        {formik.isSubmitting || isSubmitting ? 'Saving...' : 'Save Changes'}
+                        {formik.isSubmitting || isSubmitting ? 'Saving...' : 'Save'}
                     </Button>
                 </DialogActions>
             </form>
@@ -88,4 +77,4 @@ const EditContactForm: React.FC<EditContactFormProps> = ({
     );
 };
 
-export default EditContactForm;
+export default AddContactForm;

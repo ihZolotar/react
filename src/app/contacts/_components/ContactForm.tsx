@@ -4,7 +4,7 @@ import React from 'react';
 import { TextField, Box } from '@mui/material';
 import { FormikProps } from 'formik';
 import { Contact } from '@/types';
-import styles from './addContactForm.module.css';
+import styles from './AddContactForm.module.css';
 
 export type ContactFormValues = Omit<Contact, 'id'>;
 

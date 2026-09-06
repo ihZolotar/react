@@ -16,9 +16,9 @@ import {
 } from '@mui/material';
 import { MdSearch, MdAdd, MdClose } from 'react-icons/md';
 import { Contact } from '@/types';
-import ContactsTable from './components/contactsTable';
-import AddContactForm from './components/addContactForm';
-import EditContactForm from './components/editContactForm';
+import ContactsTable from './_components/ContactsTable';
+import AddContactForm from './_components/AddContactForm';
+import EditContactForm from './_components/EditContactForm';
 import styles from './page.module.css';
 import { useContacts } from '@/context/contactsContext';
 import { toErrorMessage } from '@/utils/toErrorMessage';
