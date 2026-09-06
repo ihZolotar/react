@@ -171,24 +171,26 @@ const ContactsPage = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
-                InputProps={{
-                    startAdornment: (
-                        <InputAdornment position="start">
-                            <MdSearch />
-                        </InputAdornment>
-                    ),
-                    endAdornment: searchQuery && (
-                        <InputAdornment position="end">
-                            <IconButton
-                                aria-label="clear search"
-                                onClick={() => void handleClearSearch()}
-                                edge="end"
-                                size="small"
-                            >
-                                <MdClose />
-                            </IconButton>
-                        </InputAdornment>
-                    ),
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <MdSearch />
+                            </InputAdornment>
+                        ),
+                        endAdornment: searchQuery && (
+                            <InputAdornment position="end">
+                                <IconButton
+                                    aria-label="clear search"
+                                    onClick={() => void handleClearSearch()}
+                                    edge="end"
+                                    size="small"
+                                >
+                                    <MdClose />
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                    }
                 }}
             />
             <Button

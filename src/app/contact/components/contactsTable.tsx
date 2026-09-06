@@ -326,7 +326,9 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                                             checked={contact.active}
                                             onChange={() => onToggleActive(contact.id, contact.active)}
                                             color="primary"
-                                            inputProps={{'aria-label': 'toggle contact active status'}}
+                                            slotProps={{
+                                                input: {'aria-label': 'toggle contact active status'}
+                                            }}
                                         />
                                         <Typography variant="body2" className={styles.activeText}>
                                             {contact.active ? 'Active' : 'Inactive'}
