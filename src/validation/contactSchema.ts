@@ -35,4 +35,4 @@ export const newContactInitialValues = {
     email: '',
     phone: '',
     active: true,
-};
+} satisfies Omit<Contact, 'id'>;

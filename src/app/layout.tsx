@@ -14,30 +14,29 @@ import {
     List,
     ListItem,
     ListItemText,
-    useMediaQuery,
-    useTheme
+    useMediaQuery
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../theme/theme';
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ContactsProvider } from '@/context/contactsContext';
 import { MdMenu, MdHome, MdContacts } from 'react-icons/md';
-import { ErrorBoundary } from 'react-error-boundary';
+import { ErrorBoundary, type FallbackProps } from 'react-error-boundary';
+import { toErrorMessage } from '@/utils/toErrorMessage';
 
 interface NavItem {
     name: string;
     path: string;
     icon: React.ReactNode;
 }
-
-const ErrorFallback = ({ error }: { error: Error }) => (
+const ErrorFallback = ({ error }: FallbackProps) => (
     <Container sx={{ py: 5 }}>
         <Typography variant="h5" color="error" gutterBottom>
             Something went wrong:
         </Typography>
-        <Typography variant="body1">{error.message}</Typography>
+        <Typography variant="body1">{toErrorMessage(error, 'Unknown error')}</Typography>
         <Button
             variant="contained"
             color="primary"
@@ -199,7 +198,9 @@ const Footer = () => (
         }}
     >
         <Container maxWidth="lg">
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{
+                color: 'text.secondary'
+            }}>
                 © {new Date().getFullYear()} Contact Manager App. All rights reserved.
             </Typography>
         </Container>
@@ -208,8 +209,7 @@ const Footer = () => (
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const muiTheme = useTheme();
-    const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
     const handleDrawerToggle = React.useCallback(() => {
@@ -230,13 +230,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         <NavigationBar
                             isMobile={isMobile}
                             handleDrawerToggle={handleDrawerToggle}
-                            pathname={pathname as string}
+                            pathname={pathname}
                         />
 
                         <SideDrawer
                             mobileOpen={mobileOpen}
                             handleDrawerToggle={handleDrawerToggle}
-                            pathname={pathname as string}
+                            pathname={pathname}
                         />
 
                         <Box

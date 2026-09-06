@@ -1,31 +1,46 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import { defineConfig, globalIgnores } from 'eslint/config';
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTypescript from 'eslint-config-next/typescript';
+import prettierConfig from 'eslint-config-prettier';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const TS_FILES = ['src/**/*.ts', 'src/**/*.tsx'];
 
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-});
+export default defineConfig([
+    globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts']),
 
-const eslintConfig = [
-    ...compat.extends(
-        "next/core-web-vitals",
-        "next/typescript",
-        "eslint:recommended",
-        "plugin:@typescript-eslint/recommended",
-        "prettier"
-    ),
+    js.configs.recommended,
+    ...nextVitals,
+    ...nextTypescript,
+
+    ...tseslint.configs.recommendedTypeChecked.map((config) => ({
+        ...config,
+        files: TS_FILES,
+    })),
     {
-        rules: {
-            "react/react-in-jsx-scope": "off",
-            "indent": ["error", 4],
-            "quotes": ["error", "double"],
-            "semi": ["error", "always"],
-            "@typescript-eslint/no-unused-vars": ["warn"],
+        files: TS_FILES,
+        languageOptions: {
+            parserOptions: {
+                project: './tsconfig.json',
+                tsconfigRootDir: import.meta.dirname,
+            },
         },
     },
-];
 
-export default eslintConfig;
+    prettierConfig,
+
+    {
+        rules: {
+            'react/react-in-jsx-scope': 'off',
+            '@typescript-eslint/no-unused-vars': ['warn'],
+        },
+    },
+
+    {
+        files: ['src/context/**'],
+        rules: {
+            'react-hooks/set-state-in-effect': 'warn',
+        },
+    },
+]);

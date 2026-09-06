@@ -21,6 +21,7 @@ import AddContactForm from './components/addContactForm';
 import EditContactForm from './components/editContactForm';
 import styles from './page.module.css';
 import { useContacts } from '@/context/contactsContext';
+import { toErrorMessage } from '@/utils/toErrorMessage';
 
 type NotificationType = {
     open: boolean;
@@ -75,8 +76,9 @@ const ContactsPage = () => {
             await addContactHandler(values);
             showNotification('Contact added successfully', 'success');
             setAddDialogOpen(false);
-        } catch (err) {
-            showNotification('Failed to add contact', 'error');
+        } catch (error) {
+            showNotification(toErrorMessage(error, 'Failed to add contact'), 'error');
+            throw error;
         } finally {
             setSubmitting(false);
         }
@@ -88,8 +90,9 @@ const ContactsPage = () => {
             await updateContactHandler(id, values);
             showNotification('Contact updated successfully', 'success');
             setEditDialogOpen(false);
-        } catch (err) {
-            showNotification('Failed to update contact', 'error');
+        } catch (error) {
+            showNotification(toErrorMessage(error, 'Failed to update contact'), 'error');
+            throw error;
         } finally {
             setSubmitting(false);
         }
@@ -99,8 +102,8 @@ const ContactsPage = () => {
         try {
             await deleteContactHandler(id);
             showNotification('Contact deleted successfully', 'success');
-        } catch (err) {
-            showNotification('Failed to delete contact', 'error');
+        } catch (error) {
+            showNotification(toErrorMessage(error, 'Failed to delete contact'), 'error');
         }
     }, [deleteContactHandler, showNotification]);
 
@@ -111,8 +114,8 @@ const ContactsPage = () => {
                 `Contact ${active ? 'deactivated' : 'activated'} successfully`,
                 'success'
             );
-        } catch (err) {
-            showNotification('Failed to update contact status', 'error');
+        } catch (error) {
+            showNotification(toErrorMessage(error, 'Failed to update contact status'), 'error');
         }
     }, [toggleActiveHandler, showNotification]);
 
@@ -133,7 +136,7 @@ const ContactsPage = () => {
 
     const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
-            handleSearch();
+            void handleSearch();
         }
     }, [handleSearch]);
 
@@ -168,30 +171,32 @@ const ContactsPage = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
-                InputProps={{
-                    startAdornment: (
-                        <InputAdornment position="start">
-                            <MdSearch />
-                        </InputAdornment>
-                    ),
-                    endAdornment: searchQuery && (
-                        <InputAdornment position="end">
-                            <IconButton
-                                aria-label="clear search"
-                                onClick={handleClearSearch}
-                                edge="end"
-                                size="small"
-                            >
-                                <MdClose />
-                            </IconButton>
-                        </InputAdornment>
-                    ),
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <MdSearch />
+                            </InputAdornment>
+                        ),
+                        endAdornment: searchQuery && (
+                            <InputAdornment position="end">
+                                <IconButton
+                                    aria-label="clear search"
+                                    onClick={() => void handleClearSearch()}
+                                    edge="end"
+                                    size="small"
+                                >
+                                    <MdClose />
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                    }
                 }}
             />
             <Button
                 variant="outlined"
                 sx={{ ml: 1 }}
-                onClick={handleSearch}
+                onClick={() => void handleSearch()}
                 disabled={!searchQuery.trim()}
             >
                 Search
@@ -201,7 +206,9 @@ const ContactsPage = () => {
 
     return (
         <Container maxWidth="lg">
-            <Box py={5}>
+            <Box sx={{
+                py: 5
+            }}>
                 <Paper elevation={0} sx={{ p: 2, mb: 3 }}>
                     <div className={styles.headerContent}>
                         <Typography variant="h5" component="h1">Contacts</Typography>
@@ -229,10 +236,11 @@ const ContactsPage = () => {
 
                 <ContactsTable
                     contacts={contacts}
-                    onToggleActive={handleToggleActive}
-                    onDelete={handleDeleteContact}
+                    onToggleActive={(id, active) => void handleToggleActive(id, active)}
+                    onDelete={(id) => void handleDeleteContact(id)}
                     onEdit={handleEditContact}
                     loading={loading}
+                    isFiltered={Boolean(searchQuery.trim())}
                 />
 
                 {renderDialogs}
