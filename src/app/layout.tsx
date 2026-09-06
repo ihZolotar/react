@@ -197,7 +197,9 @@ const Footer = () => (
         }}
     >
         <Container maxWidth="lg">
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{
+                color: 'text.secondary'
+            }}>
                 © {new Date().getFullYear()} Contact Manager App. All rights reserved.
             </Typography>
         </Container>

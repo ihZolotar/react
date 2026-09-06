@@ -10,12 +10,13 @@ const HomePage = () => {
         <Container maxWidth="md">
             <Paper elevation={3} sx={{mt: 5, p: 4, borderRadius: 3}}>
                 <Box
-                    display="flex"
-                    flexDirection="column"
-                    alignItems="center"
-                    textAlign="center"
-                    py={3}
-                >
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        textAlign: 'center',
+                        py: 3
+                    }}>
                     <Box sx={{mb: 3, color: 'primary.main'}}>
                         <MdContacts size={64}/>
                     </Box>

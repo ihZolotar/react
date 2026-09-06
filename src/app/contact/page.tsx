@@ -206,7 +206,9 @@ const ContactsPage = () => {
 
     return (
         <Container maxWidth="lg">
-            <Box py={5}>
+            <Box sx={{
+                py: 5
+            }}>
                 <Paper elevation={0} sx={{ p: 2, mb: 3 }}>
                     <div className={styles.headerContent}>
                         <Typography variant="h5" component="h1">Contacts</Typography>

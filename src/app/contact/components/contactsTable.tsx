@@ -105,16 +105,25 @@ const MobileContactsList = ({
                             </Typography>
                         </Grid>
                         <Grid size={12}>
-                            <Typography variant="body2" color="text.secondary" className={styles.tableCellEmail}>
+                            <Typography variant="body2" className={styles.tableCellEmail} sx={{
+                                color: 'text.secondary'
+                            }}>
                                 Email: {contact.email}
                             </Typography>
                         </Grid>
                         <Grid size={12}>
-                            <Typography variant="body2" color="text.secondary" className={styles.tableCellPhone}>
+                            <Typography variant="body2" className={styles.tableCellPhone} sx={{
+                                color: 'text.secondary'
+                            }}>
                                 Phone: {contact.phone}
                             </Typography>
                         </Grid>
-                        <Grid size={12} display="flex" alignItems="center">
+                        <Grid
+                            size={12}
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}>
                             <Chip
                                 label={contact.active ? 'Active' : 'Inactive'}
                                 color={contact.active ? 'success' : 'default'}
@@ -127,7 +136,13 @@ const MobileContactsList = ({
                                 size="small"
                             />
                         </Grid>
-                        <Grid size={12} display="flex" justifyContent="flex-end" gap={1}>
+                        <Grid
+                            size={12}
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                gap: 1
+                            }}>
                             <IconButton
                                 color="primary"
                                 onClick={() => onEdit(contact)}
@@ -234,7 +249,13 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
 
     if (loading) {
         return (
-            <Box display="flex" justifyContent="center" alignItems="center" p={4}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    p: 4
+                }}>
                 <CircularProgress/>
             </Box>
         );
@@ -321,7 +342,11 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                                 <TableCell className={styles.tableCellEmail}>{contact.email}</TableCell>
                                 <TableCell className={styles.tableCellPhone}>{contact.phone}</TableCell>
                                 <TableCell>
-                                    <Box display="flex" alignItems="center">
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center'
+                                        }}>
                                         <Switch
                                             checked={contact.active}
                                             onChange={() => onToggleActive(contact.id, contact.active)}
@@ -336,7 +361,11 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                                     </Box>
                                 </TableCell>
                                 <TableCell>
-                                    <Box display="flex" gap={1}>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            gap: 1
+                                        }}>
                                         <Tooltip title="Edit">
                                             <IconButton
                                                 color="primary"
