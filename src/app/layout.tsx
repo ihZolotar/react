@@ -14,8 +14,7 @@ import {
     List,
     ListItem,
     ListItemText,
-    useMediaQuery,
-    useTheme
+    useMediaQuery
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../theme/theme';
@@ -31,7 +30,6 @@ interface NavItem {
     path: string;
     icon: React.ReactNode;
 }
-
 const ErrorFallback = ({ error }: { error: Error }) => (
     <Container sx={{ py: 5 }}>
         <Typography variant="h5" color="error" gutterBottom>
@@ -208,8 +206,7 @@ const Footer = () => (
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const muiTheme = useTheme();
-    const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
     const handleDrawerToggle = React.useCallback(() => {
@@ -230,13 +227,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         <NavigationBar
                             isMobile={isMobile}
                             handleDrawerToggle={handleDrawerToggle}
-                            pathname={pathname as string}
+                            pathname={pathname}
                         />
 
                         <SideDrawer
                             mobileOpen={mobileOpen}
                             handleDrawerToggle={handleDrawerToggle}
-                            pathname={pathname as string}
+                            pathname={pathname}
                         />
 
                         <Box

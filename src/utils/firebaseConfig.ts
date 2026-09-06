@@ -15,10 +15,12 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-signInAnonymously(auth)
-    .then((userCredential) => {
-        console.log('Signed in anonymously:', userCredential.user);
-    })
-    .catch((error) => console.error('Anonymous sign-in error:', error));
+let signInPromise: Promise<void> | null = null;
+
+export const ensureSignedIn = (): Promise<void> => {
+    signInPromise ??= signInAnonymously(auth).then(() => undefined);
+
+    return signInPromise;
+};
 
 export { db };

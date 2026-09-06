@@ -37,7 +37,7 @@ const EditContactForm: React.FC<EditContactFormProps> = ({
             last_name: contact?.last_name || '',
             email: contact?.email || '',
             phone: contact?.phone || '',
-            active: contact?.active || true,
+            active: contact?.active ?? true,
         },
         validationSchema: createContactValidationSchema(contacts, contact?.id),
         onSubmit: async (values, { setSubmitting }) => {

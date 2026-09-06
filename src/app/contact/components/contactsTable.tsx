@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useCallback, useMemo} from 'react';
+import React, {useState, useCallback, useMemo, useEffect} from 'react';
 import {
     Table,
     TableBody,
@@ -42,10 +42,10 @@ interface ContactsTableProps {
     onDelete: (id: string) => void;
     onEdit: (contact: Contact) => void;
     loading?: boolean;
+    isFiltered?: boolean;
 }
 
 type PageChangeEvent = React.MouseEvent<HTMLButtonElement> | null;
-
 const DeleteConfirmDialog = ({
                                  open,
                                  contact,
@@ -160,6 +160,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                                                          onDelete,
                                                          onEdit,
                                                          loading = false,
+                                                         isFiltered = false,
                                                      }) => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -170,6 +171,14 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+    useEffect(() => {
+        const lastPage = Math.max(0, Math.ceil(contacts.length / rowsPerPage) - 1);
+
+        if (page > lastPage) {
+            setPage(lastPage);
+        }
+    }, [contacts.length, rowsPerPage, page]);
 
     const handleChangePage = useCallback((event: PageChangeEvent, newPage: number) => {
         setPage(newPage);
@@ -208,14 +217,11 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
 
     const sortedContacts = useMemo(() => {
         return [...contacts].sort((a, b) => {
-            const valueA = a[sortField]?.toLowerCase() ?? '';
-            const valueB = b[sortField]?.toLowerCase() ?? '';
+            const comparison = (a[sortField] ?? '').localeCompare(b[sortField] ?? '', undefined, {
+                sensitivity: 'base',
+            });
 
-            if (sortOrder === 'asc') {
-                return valueA > valueB ? 1 : -1;
-            } else {
-                return valueA < valueB ? 1 : -1;
-            }
+            return sortOrder === 'asc' ? comparison : -comparison;
         });
     }, [contacts, sortField, sortOrder]);
 
@@ -237,7 +243,11 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
     if (contacts.length === 0) {
         return (
             <Paper sx={{p: 3, textAlign: 'center'}}>
-                <Typography variant="body1">No contacts found. Add your first contact.</Typography>
+                <Typography variant="body1">
+                    {isFiltered
+                        ? 'No contacts match your search.'
+                        : 'No contacts found. Add your first contact.'}
+                </Typography>
             </Paper>
         );
     }
@@ -284,12 +294,14 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                     <TableHead>
                         <TableRow>
                             {['first_name', 'last_name', 'email', 'phone'].map((field) => (
-                                <TableCell key={field}>
+                                <TableCell
+                                    key={field}
+                                    aria-sort={sortField === field ? `${sortOrder}ending` : 'none'}
+                                >
                                     <TableSortLabel
                                         active={sortField === field}
                                         direction={sortField === field ? sortOrder : 'asc'}
                                         onClick={() => handleSort(field as SortField)}
-                                        aria-sort={sortField === field ? `${sortOrder}ending` : 'none'}
                                     >
                                         {field.split('_').map(word =>
                                             word.charAt(0).toUpperCase() + word.slice(1)

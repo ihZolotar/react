@@ -49,7 +49,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({children}) =>
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetchContacts();
+        void fetchContacts();
     }, []);
 
     const fetchContacts = async (activeOnly = false) => {

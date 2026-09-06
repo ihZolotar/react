@@ -9,152 +9,136 @@ import {
     query,
     where,
     orderBy,
-    FirestoreError
+    FirestoreError,
+    type DocumentData,
+    type FirestoreDataConverter,
 } from 'firebase/firestore';
-import { db } from '@/utils/firebaseConfig';
+import { db, ensureSignedIn } from '@/utils/firebaseConfig';
 import { Contact } from '@/types';
 
-const contactsCollection = collection(db, 'contacts');
+const asString = (value: unknown): string => (typeof value === 'string' ? value : '');
 
-/**
- * Error handling for Firebase
- */
-const handleFirebaseError = (error: unknown, customMessage: string): Error => {
-    console.error(customMessage, error);
+const asOptionalString = (value: unknown): string | undefined =>
+    typeof value === 'string' ? value : undefined;
 
-    if (error instanceof FirestoreError) {
-        return new Error(`${customMessage}: ${error.message} (code: ${error.code})`);
-    }
+const contactConverter: FirestoreDataConverter<Contact> = {
+    toFirestore: (contact): DocumentData => ({
+        first_name: contact.first_name,
+        last_name: contact.last_name,
+        email: contact.email,
+        phone: contact.phone,
+        active: contact.active,
+    }),
+    fromFirestore: (snapshot, options): Contact => {
+        const data = snapshot.data(options);
 
-    return new Error(customMessage);
+        return {
+            id: snapshot.id,
+            first_name: asString(data.first_name),
+            last_name: asString(data.last_name),
+            email: asString(data.email),
+            phone: asString(data.phone),
+            active: data.active === true,
+            created_at: asOptionalString(data.created_at),
+            updated_at: asOptionalString(data.updated_at),
+        };
+    },
 };
 
-/**
- * Adds a new contact to the database
- */
+const contactsCollection = collection(db, 'contacts');
+const contactsReadCollection = contactsCollection.withConverter(contactConverter);
+
+const contactDocRef = (id: string) => doc(db, 'contacts', id);
+
+const handleFirebaseError = (error: unknown, customMessage: string): Error => {
+    if (error instanceof FirestoreError) {
+        return new Error(`${customMessage}: ${error.message} (code: ${error.code})`, {
+            cause: error,
+        });
+    }
+
+    return new Error(customMessage, { cause: error });
+};
+
 export const addContact = async (contact: Omit<Contact, 'id'>): Promise<Contact> => {
     try {
+        await ensureSignedIn();
+
         const now = new Date().toISOString();
         const docRef = await addDoc(contactsCollection, {
             ...contact,
             created_at: now,
-            updated_at: now
+            updated_at: now,
         });
 
-        return { id: docRef.id, ...contact };
+        return { id: docRef.id, ...contact, created_at: now, updated_at: now };
     } catch (error) {
         throw handleFirebaseError(error, 'Failed to add contact');
     }
 };
 
-/**
- * Gets all contacts from the database
- */
 export const getContacts = async (activeOnly = false): Promise<Contact[]> => {
     try {
-        let contactsQuery;
+        await ensureSignedIn();
 
-        if (activeOnly) {
-            contactsQuery = query(
-                contactsCollection,
-                where('active', '==', true),
-                orderBy('last_name')
-            );
-        } else {
-            contactsQuery = query(contactsCollection, orderBy('last_name'));
-        }
+        const contactsQuery = activeOnly
+            ? query(contactsReadCollection, where('active', '==', true), orderBy('last_name'))
+            : query(contactsReadCollection, orderBy('last_name'));
 
         const snapshot = await getDocs(contactsQuery);
 
-        return snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-        })) as Contact[];
+        return snapshot.docs.map((snapshotDoc) => snapshotDoc.data());
     } catch (error) {
         throw handleFirebaseError(error, 'Failed to get contacts');
     }
 };
 
-/**
- * Gets a contact by ID
- */
 export const getContactById = async (id: string): Promise<Contact | null> => {
     try {
-        const contactDoc = doc(db, 'contacts', id);
-        const snapshot = await getDoc(contactDoc);
+        await ensureSignedIn();
 
-        if (!snapshot.exists()) {
-            return null;
-        }
+        const snapshot = await getDoc(contactDocRef(id).withConverter(contactConverter));
 
-        return {
-            id: snapshot.id,
-            ...snapshot.data(),
-        } as Contact;
+        return snapshot.exists() ? snapshot.data() : null;
     } catch (error) {
         throw handleFirebaseError(error, `Failed to get contact with id ${id}`);
     }
 };
 
-/**
- * Updates an existing contact
- */
 export const updateContact = async (id: string, updatedData: Partial<Contact>): Promise<void> => {
     try {
-        const contactDoc = doc(db, 'contacts', id);
+        await ensureSignedIn();
 
-        const snapshot = await getDoc(contactDoc);
-        if (!snapshot.exists()) {
-            throw new Error(`Contact with id ${id} not found`);
-        }
-
-        await updateDoc(contactDoc, {
+        await updateDoc(contactDocRef(id), {
             ...updatedData,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
         });
     } catch (error) {
         throw handleFirebaseError(error, `Failed to update contact with id ${id}`);
     }
 };
 
-/**
- * Contact deletion
- */
 export const deleteContact = async (id: string): Promise<void> => {
     try {
-        const contactDoc = doc(db, 'contacts', id);
+        await ensureSignedIn();
 
-        const snapshot = await getDoc(contactDoc);
-
-        if (!snapshot.exists()) {
-            throw new Error(`Contact with id ${id} not found`);
-        }
-
-        await deleteDoc(contactDoc);
+        await deleteDoc(contactDocRef(id));
     } catch (error) {
         throw handleFirebaseError(error, `Failed to delete contact with id ${id}`);
     }
 };
 
-/**
- * Search contacts by name, surname or email
- */
 export const searchContacts = async (searchQuery: string): Promise<Contact[]> => {
     try {
-        const snapshot = await getDocs(contactsCollection);
-        const contacts = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-        })) as Contact[];
-
-        const query = searchQuery.toLowerCase().trim();
+        const contacts = await getContacts();
+        const normalizedQuery = searchQuery.toLowerCase().trim();
 
         return contacts.filter(
             (contact) =>
-                contact.first_name.toLowerCase().includes(query) ||
-                contact.last_name.toLowerCase().includes(query) ||
-                contact.email.toLowerCase().includes(query) ||
-                contact.phone.includes(query)
+                contact.first_name.toLowerCase().includes(normalizedQuery) ||
+                contact.last_name.toLowerCase().includes(normalizedQuery) ||
+                contact.email.toLowerCase().includes(normalizedQuery) ||
+                contact.phone.includes(normalizedQuery)
         );
     } catch (error) {
         throw handleFirebaseError(error, 'Failed to search contacts');
