@@ -23,19 +23,20 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ContactsProvider } from '@/context/contactsContext';
 import { MdMenu, MdHome, MdContacts } from 'react-icons/md';
-import { ErrorBoundary } from 'react-error-boundary';
+import { ErrorBoundary, type FallbackProps } from 'react-error-boundary';
+import { toErrorMessage } from '@/utils/toErrorMessage';
 
 interface NavItem {
     name: string;
     path: string;
     icon: React.ReactNode;
 }
-const ErrorFallback = ({ error }: { error: Error }) => (
+const ErrorFallback = ({ error }: FallbackProps) => (
     <Container sx={{ py: 5 }}>
         <Typography variant="h5" color="error" gutterBottom>
             Something went wrong:
         </Typography>
-        <Typography variant="body1">{error.message}</Typography>
+        <Typography variant="body1">{toErrorMessage(error, 'Unknown error')}</Typography>
         <Button
             variant="contained"
             color="primary"
