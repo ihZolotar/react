@@ -28,7 +28,7 @@ import {
     DialogActions,
     Button,
 } from '@mui/material';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import {MdEdit, MdDelete} from 'react-icons/md';
 import {Contact} from '@/types';
 import styles from './contactsTable.module.css';
