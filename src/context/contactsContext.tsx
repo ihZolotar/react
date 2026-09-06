@@ -48,10 +48,6 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({children}) =>
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        void fetchContacts();
-    }, []);
-
     const fetchContacts = async (activeOnly = false) => {
         try {
             setLoading(true);
@@ -65,6 +61,10 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({children}) =>
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        void fetchContacts();
+    }, []);
 
     const searchContacts = async (query: string) => {
         if (!query.trim()) {

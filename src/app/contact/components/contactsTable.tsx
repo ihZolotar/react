@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useCallback, useMemo, useEffect} from 'react';
+import React, {useState, useCallback, useMemo} from 'react';
 import {
     Table,
     TableBody,
@@ -187,13 +187,8 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-    useEffect(() => {
-        const lastPage = Math.max(0, Math.ceil(contacts.length / rowsPerPage) - 1);
-
-        if (page > lastPage) {
-            setPage(lastPage);
-        }
-    }, [contacts.length, rowsPerPage, page]);
+    const lastPage = Math.max(0, Math.ceil(contacts.length / rowsPerPage) - 1);
+    const safePage = Math.min(page, lastPage);
 
     const handleChangePage = useCallback((event: PageChangeEvent, newPage: number) => {
         setPage(newPage);
@@ -242,10 +237,10 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
 
     const paginatedContacts = useMemo(() => {
         return sortedContacts.slice(
-            page * rowsPerPage,
-            page * rowsPerPage + rowsPerPage
+            safePage * rowsPerPage,
+            safePage * rowsPerPage + rowsPerPage
         );
-    }, [sortedContacts, page, rowsPerPage]);
+    }, [sortedContacts, safePage, rowsPerPage]);
 
     if (loading) {
         return (
@@ -278,7 +273,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
             component="div"
             count={contacts.length}
             rowsPerPage={rowsPerPage}
-            page={page}
+            page={safePage}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25]}
