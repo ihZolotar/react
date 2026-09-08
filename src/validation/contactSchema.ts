@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { Contact } from '@/types';
+import { Contact, ContactDraft } from '@/types';
 
 const createEmailValidator = (contacts: Contact[], currentId?: string) => {
     return (email: string) =>
@@ -35,4 +35,4 @@ export const newContactInitialValues = {
     email: '',
     phone: '',
     active: true,
-} satisfies Omit<Contact, 'id'>;
+} satisfies ContactDraft;

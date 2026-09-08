@@ -127,20 +127,3 @@ export const deleteContact = async (id: string): Promise<void> => {
         throw handleFirebaseError(error, `Failed to delete contact with id ${id}`);
     }
 };
-
-export const searchContacts = async (searchQuery: string): Promise<Contact[]> => {
-    try {
-        const contacts = await getContacts();
-        const normalizedQuery = searchQuery.toLowerCase().trim();
-
-        return contacts.filter(
-            (contact) =>
-                contact.first_name.toLowerCase().includes(normalizedQuery) ||
-                contact.last_name.toLowerCase().includes(normalizedQuery) ||
-                contact.email.toLowerCase().includes(normalizedQuery) ||
-                contact.phone.includes(normalizedQuery)
-        );
-    } catch (error) {
-        throw handleFirebaseError(error, 'Failed to search contacts');
-    }
-};

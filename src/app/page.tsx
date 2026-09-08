@@ -35,7 +35,7 @@ const HomePage = () => {
                         Manage your contacts efficiently. Add, edit, and organize your contact information all in one
                         place.
                     </Typography>
-                    <Link href="/contact" passHref style={{textDecoration: 'none'}}>
+                    <Link href="/contacts" passHref style={{textDecoration: 'none'}}>
                         <Button
                             variant="contained"
                             color="primary"

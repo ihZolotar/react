@@ -3,13 +3,11 @@
 import React from 'react';
 import { TextField, Box } from '@mui/material';
 import { FormikProps } from 'formik';
-import { Contact } from '@/types';
-import styles from './addContactForm.module.css';
-
-export type ContactFormValues = Omit<Contact, 'id'>;
+import { ContactDraft } from '@/types';
+import styles from './AddContactForm.module.css';
 
 interface ContactFormProps {
-    formik: FormikProps<ContactFormValues>;
+    formik: FormikProps<ContactDraft>;
 }
 
 const ContactForm: React.FC<ContactFormProps> = ({ formik }) => {
