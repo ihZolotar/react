@@ -11,7 +11,11 @@ export const selectMutationError = (state: RootState) => state.contacts.mutation
 export const selectSelectedContactId = (state: RootState) => state.contacts.selectedContactId;
 
 export const selectIsInitialLoad = (state: RootState) =>
-    state.contacts.listStatus === 'pending' && state.contacts.items.length === 0;
+    (state.contacts.listStatus === 'idle' || state.contacts.listStatus === 'pending') &&
+    state.contacts.items.length === 0;
+
+export const selectIsListUnavailable = (state: RootState) =>
+    state.contacts.listStatus === 'failed' && state.contacts.items.length === 0;
 
 export const selectIsListRefreshing = (state: RootState) =>
     state.contacts.listStatus === 'pending' && state.contacts.items.length > 0;
@@ -51,4 +55,4 @@ export const selectContactById = (id: string | null) => (state: RootState) =>
     id === null ? null : (state.contacts.items.find((contact) => contact.id === id) ?? null);
 
 export const selectIsContactPending = (id: string | null) => (state: RootState) =>
-    id !== null && state.contacts.pendingIds[id] === true;
+    id !== null && state.contacts.pendingIds[id];
