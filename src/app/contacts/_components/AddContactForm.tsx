@@ -10,26 +10,23 @@ import {
     CircularProgress,
 } from '@mui/material';
 import { useFormik } from 'formik';
-import { Contact } from '@/types';
+import { ContactDraft } from '@/types';
 import { createContactValidationSchema, newContactInitialValues } from '@/validation/contactSchema';
-import ContactForm, { ContactFormValues } from './contactForm';
+import { useAppSelector } from '@/store/hooks';
+import { selectContacts, selectCreateStatus } from '@/store/contactsSelectors';
+import ContactForm from './ContactForm';
 
 interface AddContactFormProps {
     open: boolean;
     onClose: () => void;
-    onSubmit: (values: Omit<Contact, 'id'>) => Promise<void>;
-    contacts: Contact[];
-    isSubmitting?: boolean;
+    onSubmit: (values: ContactDraft) => Promise<void>;
 }
 
-const AddContactForm: React.FC<AddContactFormProps> = ({
-                                                           open,
-                                                           onClose,
-                                                           onSubmit,
-                                                           contacts,
-                                                           isSubmitting = false,
-                                                       }) => {
-    const formik = useFormik<ContactFormValues>({
+const AddContactForm: React.FC<AddContactFormProps> = ({ open, onClose, onSubmit }) => {
+    const contacts = useAppSelector(selectContacts);
+    const isSaving = useAppSelector(selectCreateStatus) === 'pending';
+
+    const formik = useFormik<ContactDraft>({
         initialValues: newContactInitialValues,
         validationSchema: createContactValidationSchema(contacts),
         onSubmit: async (values, { resetForm, setSubmitting }) => {
@@ -59,17 +56,17 @@ const AddContactForm: React.FC<AddContactFormProps> = ({
                     <ContactForm formik={formik} />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose} color="inherit" disabled={formik.isSubmitting || isSubmitting}>
+                    <Button onClick={handleClose} color="inherit" disabled={isSaving}>
                         Cancel
                     </Button>
                     <Button
                         type="submit"
                         variant="contained"
                         color="primary"
-                        disabled={formik.isSubmitting || isSubmitting}
-                        startIcon={formik.isSubmitting || isSubmitting ? <CircularProgress size={20} /> : null}
+                        disabled={isSaving}
+                        startIcon={isSaving ? <CircularProgress size={20} /> : null}
                     >
-                        {formik.isSubmitting || isSubmitting ? 'Saving...' : 'Save'}
+                        {isSaving ? 'Saving...' : 'Save'}
                     </Button>
                 </DialogActions>
             </form>

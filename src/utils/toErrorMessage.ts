@@ -1,2 +1,11 @@
-export const toErrorMessage = (error: unknown, fallback: string): string =>
-    error instanceof Error ? error.message : fallback;
+export const toErrorMessage = (error: unknown, fallback: string): string => {
+    if (error instanceof Error) {
+        return error.message;
+    }
+
+    if (typeof error === 'string') {
+        return error;
+    }
+
+    return fallback;
+};
