@@ -36,6 +36,7 @@ import {
     selectIsContactPending,
     selectIsInitialLoad,
     selectIsListRefreshing,
+    selectIsListUnavailable,
     selectSearchQuery,
     selectSort,
     selectSortedContacts,
@@ -257,6 +258,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ onToggleActive, onDelete,
     const sort = useAppSelector(selectSort);
     const searchQuery = useAppSelector(selectSearchQuery);
     const isInitialLoad = useAppSelector(selectIsInitialLoad);
+    const isListUnavailable = useAppSelector(selectIsListUnavailable);
     const isRefreshing = useAppSelector(selectIsListRefreshing);
 
     const [page, setPage] = useState(0);
@@ -317,6 +319,10 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ onToggleActive, onDelete,
                 <CircularProgress />
             </Box>
         );
+    }
+
+    if (isListUnavailable) {
+        return null;
     }
 
     if (contacts.length === 0) {
