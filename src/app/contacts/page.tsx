@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Box,
     Button,
@@ -15,200 +15,98 @@ import {
     Divider,
 } from '@mui/material';
 import { MdSearch, MdAdd, MdClose } from 'react-icons/md';
-import { Contact } from '@/types';
+import { ContactDraft } from '@/types';
 import ContactsTable from './_components/ContactsTable';
 import AddContactForm from './_components/AddContactForm';
 import EditContactForm from './_components/EditContactForm';
 import styles from './page.module.css';
-import { useContacts } from '@/context/contactsContext';
-import { toErrorMessage } from '@/utils/toErrorMessage';
-
-type NotificationType = {
-    open: boolean;
-    message: string;
-    type: 'success' | 'error';
-};
-
-const initialNotification: NotificationType = {
-    open: false,
-    message: '',
-    type: 'success',
-};
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import {
+    addContact,
+    deleteContact,
+    fetchContacts,
+    toggleContactActive,
+    updateContact,
+} from '@/store/contactsThunks';
+import { clearMutationError, setSearchQuery, setSelectedContactId } from '@/store/contactsSlice';
+import { selectListError, selectMutationError } from '@/store/contactsSelectors';
 
 const ContactsPage = () => {
-    const {
-        contacts,
-        loading,
-        error,
-        addContactHandler,
-        updateContactHandler,
-        deleteContactHandler,
-        toggleActiveHandler,
-        searchContacts,
-        fetchContacts,
-    } = useContacts();
+    const dispatch = useAppDispatch();
+    const listError = useAppSelector(selectListError);
+    const mutationError = useAppSelector(selectMutationError);
 
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [currentContact, setCurrentContact] = useState<Contact | null>(null);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [submitting, setSubmitting] = useState(false);
-    const [notification, setNotification] = useState<NotificationType>(initialNotification);
+    const [searchInput, setSearchInput] = useState('');
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-    const showNotification = useCallback((message: string, type: 'success' | 'error') => {
-        setNotification({
-            open: true,
-            message,
-            type,
-        });
-    }, []);
+    useEffect(() => {
+        void dispatch(fetchContacts({}));
+    }, [dispatch]);
 
-    const handleCloseNotification = useCallback(() => {
-        setNotification(prev => ({
-            ...prev,
-            open: false,
-        }));
-    }, []);
+    const dismissSuccess = () => setSuccessMessage(null);
+    const dismissError = () => dispatch(clearMutationError());
 
-    const handleAddContact = useCallback(async (values: Omit<Contact, 'id'>) => {
-        try {
-            setSubmitting(true);
-            await addContactHandler(values);
-            showNotification('Contact added successfully', 'success');
-            setAddDialogOpen(false);
-        } catch (error) {
-            showNotification(toErrorMessage(error, 'Failed to add contact'), 'error');
-            throw error;
-        } finally {
-            setSubmitting(false);
+    const handleAddContact = async (values: ContactDraft) => {
+        setSuccessMessage(null);
+        await dispatch(addContact(values)).unwrap();
+        setSuccessMessage('Contact added successfully');
+    };
+
+    const handleUpdateContact = async (id: string, values: ContactDraft) => {
+        setSuccessMessage(null);
+        await dispatch(updateContact({ id, changes: values })).unwrap();
+        setSuccessMessage('Contact updated successfully');
+    };
+
+    const handleDeleteContact = async (id: string) => {
+        setSuccessMessage(null);
+
+        const result = await dispatch(deleteContact({ id }));
+
+        if (deleteContact.fulfilled.match(result)) {
+            setSuccessMessage('Contact deleted successfully');
         }
-    }, [addContactHandler, showNotification]);
+    };
 
-    const handleUpdateContact = useCallback(async (id: string, values: Partial<Contact>) => {
-        try {
-            setSubmitting(true);
-            await updateContactHandler(id, values);
-            showNotification('Contact updated successfully', 'success');
-            setEditDialogOpen(false);
-        } catch (error) {
-            showNotification(toErrorMessage(error, 'Failed to update contact'), 'error');
-            throw error;
-        } finally {
-            setSubmitting(false);
-        }
-    }, [updateContactHandler, showNotification]);
+    const handleToggleActive = async (id: string) => {
+        setSuccessMessage(null);
 
-    const handleDeleteContact = useCallback(async (id: string) => {
-        try {
-            await deleteContactHandler(id);
-            showNotification('Contact deleted successfully', 'success');
-        } catch (error) {
-            showNotification(toErrorMessage(error, 'Failed to delete contact'), 'error');
-        }
-    }, [deleteContactHandler, showNotification]);
+        const result = await dispatch(toggleContactActive({ id }));
 
-    const handleToggleActive = useCallback(async (id: string, active: boolean) => {
-        try {
-            await toggleActiveHandler(id, active);
-            showNotification(
-                `Contact ${active ? 'deactivated' : 'activated'} successfully`,
-                'success'
+        if (toggleContactActive.fulfilled.match(result)) {
+            setSuccessMessage(
+                result.payload.changes.active
+                    ? 'Contact activated successfully'
+                    : 'Contact deactivated successfully'
             );
-        } catch (error) {
-            showNotification(toErrorMessage(error, 'Failed to update contact status'), 'error');
         }
-    }, [toggleActiveHandler, showNotification]);
+    };
 
-    const handleEditContact = useCallback((contact: Contact) => {
-        setCurrentContact(contact);
+    const handleEditContact = (id: string) => {
+        dispatch(setSelectedContactId(id));
         setEditDialogOpen(true);
-    }, []);
+    };
 
-    const handleSearch = useCallback(async () => {
-        if (!searchQuery.trim()) return;
-        await searchContacts(searchQuery);
-    }, [searchQuery, searchContacts]);
+    const handleSearch = () => {
+        dispatch(setSearchQuery(searchInput));
+    };
 
-    const handleClearSearch = useCallback(async () => {
-        setSearchQuery('');
-        await fetchContacts();
-    }, [fetchContacts]);
+    const handleClearSearch = () => {
+        setSearchInput('');
+        dispatch(setSearchQuery(''));
+    };
 
-    const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            void handleSearch();
+    const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            handleSearch();
         }
-    }, [handleSearch]);
-
-    const renderDialogs = useMemo(() => (
-        <>
-            <AddContactForm
-                open={addDialogOpen}
-                onClose={() => setAddDialogOpen(false)}
-                onSubmit={handleAddContact}
-                contacts={contacts}
-                isSubmitting={submitting}
-            />
-
-            <EditContactForm
-                open={editDialogOpen}
-                onClose={() => setEditDialogOpen(false)}
-                onSubmit={handleUpdateContact}
-                contact={currentContact}
-                contacts={contacts}
-                isSubmitting={submitting}
-            />
-        </>
-    ), [addDialogOpen, editDialogOpen, handleAddContact, handleUpdateContact, contacts, currentContact, submitting]);
-
-    const searchComponent = useMemo(() => (
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <TextField
-                fullWidth
-                variant="outlined"
-                size="small"
-                placeholder="Search contacts..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleSearchKeyDown}
-                slotProps={{
-                    input: {
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <MdSearch />
-                            </InputAdornment>
-                        ),
-                        endAdornment: searchQuery && (
-                            <InputAdornment position="end">
-                                <IconButton
-                                    aria-label="clear search"
-                                    onClick={() => void handleClearSearch()}
-                                    edge="end"
-                                    size="small"
-                                >
-                                    <MdClose />
-                                </IconButton>
-                            </InputAdornment>
-                        ),
-                    }
-                }}
-            />
-            <Button
-                variant="outlined"
-                sx={{ ml: 1 }}
-                onClick={() => void handleSearch()}
-                disabled={!searchQuery.trim()}
-            >
-                Search
-            </Button>
-        </Box>
-    ), [searchQuery, handleSearchKeyDown, handleClearSearch, handleSearch]);
+    };
 
     return (
         <Container maxWidth="lg">
-            <Box sx={{
-                py: 5
-            }}>
+            <Box sx={{ py: 5 }}>
                 <Paper elevation={0} sx={{ p: 2, mb: 3 }}>
                     <div className={styles.headerContent}>
                         <Typography variant="h5" component="h1">Contacts</Typography>
@@ -225,38 +123,91 @@ const ContactsPage = () => {
 
                     <Divider sx={{ my: 2 }} />
 
-                    {searchComponent}
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <TextField
+                            fullWidth
+                            variant="outlined"
+                            size="small"
+                            placeholder="Search contacts..."
+                            value={searchInput}
+                            onChange={(event) => setSearchInput(event.target.value)}
+                            onKeyDown={handleSearchKeyDown}
+                            slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <MdSearch />
+                                        </InputAdornment>
+                                    ),
+                                    endAdornment: searchInput && (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="clear search"
+                                                onClick={handleClearSearch}
+                                                edge="end"
+                                                size="small"
+                                            >
+                                                <MdClose />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }
+                            }}
+                        />
+                        <Button
+                            variant="outlined"
+                            sx={{ ml: 1 }}
+                            onClick={handleSearch}
+                            disabled={!searchInput.trim()}
+                        >
+                            Search
+                        </Button>
+                    </Box>
                 </Paper>
 
-                {error && (
+                {listError && (
                     <Alert severity="error" sx={{ mb: 2 }}>
-                        {error}
+                        {listError}
                     </Alert>
                 )}
 
                 <ContactsTable
-                    contacts={contacts}
-                    onToggleActive={(id, active) => void handleToggleActive(id, active)}
+                    onToggleActive={(id) => void handleToggleActive(id)}
                     onDelete={(id) => void handleDeleteContact(id)}
                     onEdit={handleEditContact}
-                    loading={loading}
-                    isFiltered={Boolean(searchQuery.trim())}
                 />
 
-                {renderDialogs}
+                <AddContactForm
+                    open={addDialogOpen}
+                    onClose={() => setAddDialogOpen(false)}
+                    onSubmit={handleAddContact}
+                />
+
+                <EditContactForm
+                    open={editDialogOpen}
+                    onClose={() => setEditDialogOpen(false)}
+                    onSubmit={handleUpdateContact}
+                />
 
                 <Snackbar
-                    open={notification.open}
+                    open={mutationError === null && successMessage !== null}
                     autoHideDuration={6000}
-                    onClose={handleCloseNotification}
+                    onClose={dismissSuccess}
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                 >
-                    <Alert
-                        onClose={handleCloseNotification}
-                        severity={notification.type}
-                        sx={{ width: '100%' }}
-                    >
-                        {notification.message}
+                    <Alert onClose={dismissSuccess} severity="success" sx={{ width: '100%' }}>
+                        {successMessage}
+                    </Alert>
+                </Snackbar>
+
+                <Snackbar
+                    open={mutationError !== null}
+                    autoHideDuration={6000}
+                    onClose={dismissError}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                >
+                    <Alert onClose={dismissError} severity="error" sx={{ width: '100%' }}>
+                        {mutationError}
                     </Alert>
                 </Snackbar>
             </Box>

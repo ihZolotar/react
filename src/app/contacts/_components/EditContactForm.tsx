@@ -10,41 +10,43 @@ import {
     CircularProgress,
 } from '@mui/material';
 import { useFormik } from 'formik';
-import { Contact } from '@/types';
+import { ContactDraft } from '@/types';
 import { createContactValidationSchema } from '@/validation/contactSchema';
-import ContactForm, { ContactFormValues } from './ContactForm';
+import { useAppSelector } from '@/store/hooks';
+import {
+    selectContactById,
+    selectContacts,
+    selectIsContactPending,
+    selectSelectedContactId,
+} from '@/store/contactsSelectors';
+import ContactForm from './ContactForm';
 
 interface EditContactFormProps {
     open: boolean;
     onClose: () => void;
-    onSubmit: (id: string, values: Omit<Contact, 'id'>) => Promise<void>;
-    contact: Contact | null;
-    contacts: Contact[];
-    isSubmitting?: boolean;
+    onSubmit: (id: string, values: ContactDraft) => Promise<void>;
 }
 
-const EditContactForm: React.FC<EditContactFormProps> = ({
-                                                             open,
-                                                             onClose,
-                                                             onSubmit,
-                                                             contact,
-                                                             contacts,
-                                                             isSubmitting = false,
-                                                         }) => {
-    const formik = useFormik<ContactFormValues>({
+const EditContactForm: React.FC<EditContactFormProps> = ({ open, onClose, onSubmit }) => {
+    const contactId = useAppSelector(selectSelectedContactId);
+    const contact = useAppSelector(selectContactById(contactId));
+    const contacts = useAppSelector(selectContacts);
+    const isSaving = useAppSelector(selectIsContactPending(contactId));
+
+    const formik = useFormik<ContactDraft>({
         initialValues: {
-            first_name: contact?.first_name || '',
-            last_name: contact?.last_name || '',
-            email: contact?.email || '',
-            phone: contact?.phone || '',
+            first_name: contact?.first_name ?? '',
+            last_name: contact?.last_name ?? '',
+            email: contact?.email ?? '',
+            phone: contact?.phone ?? '',
             active: contact?.active ?? true,
         },
-        validationSchema: createContactValidationSchema(contacts, contact?.id),
+        validationSchema: createContactValidationSchema(contacts, contactId ?? undefined),
         onSubmit: async (values, { setSubmitting }) => {
-            if (!contact) return;
+            if (contactId === null) return;
 
             try {
-                await onSubmit(contact.id, values);
+                await onSubmit(contactId, values);
                 onClose();
             } catch (error) {
                 console.error('Error updating contact:', error);
@@ -55,7 +57,7 @@ const EditContactForm: React.FC<EditContactFormProps> = ({
         enableReinitialize: true,
     });
 
-    if (!contact) return null;
+    if (contact === null) return null;
 
     const handleClose = () => {
         formik.resetForm();
@@ -70,17 +72,17 @@ const EditContactForm: React.FC<EditContactFormProps> = ({
                     <ContactForm formik={formik} />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose} color="inherit" disabled={formik.isSubmitting || isSubmitting}>
+                    <Button onClick={handleClose} color="inherit" disabled={isSaving}>
                         Cancel
                     </Button>
                     <Button
                         type="submit"
                         variant="contained"
                         color="primary"
-                        disabled={formik.isSubmitting || isSubmitting}
-                        startIcon={formik.isSubmitting || isSubmitting ? <CircularProgress size={20} /> : null}
+                        disabled={isSaving}
+                        startIcon={isSaving ? <CircularProgress size={20} /> : null}
                     >
-                        {formik.isSubmitting || isSubmitting ? 'Saving...' : 'Save Changes'}
+                        {isSaving ? 'Saving...' : 'Save Changes'}
                     </Button>
                 </DialogActions>
             </form>

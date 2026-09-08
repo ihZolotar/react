@@ -3,7 +3,6 @@
 import { useCallback, useState, type ReactNode } from 'react';
 import { Box } from '@mui/material';
 import { usePathname } from 'next/navigation';
-import { ContactsProvider } from '@/context/contactsContext';
 import NavigationBar from './NavigationBar';
 import SideDrawer from './SideDrawer';
 import Footer from './Footer';
@@ -18,21 +17,19 @@ const AppShell = ({ children }: { children: ReactNode }) => {
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            <ContactsProvider>
-                <NavigationBar handleDrawerToggle={handleDrawerToggle} pathname={pathname} />
+            <NavigationBar handleDrawerToggle={handleDrawerToggle} pathname={pathname} />
 
-                <SideDrawer
-                    mobileOpen={mobileOpen}
-                    handleDrawerToggle={handleDrawerToggle}
-                    pathname={pathname}
-                />
+            <SideDrawer
+                mobileOpen={mobileOpen}
+                handleDrawerToggle={handleDrawerToggle}
+                pathname={pathname}
+            />
 
-                <Box component="main" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                    {children}
-                </Box>
+            <Box component="main" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                {children}
+            </Box>
 
-                <Footer />
-            </ContactsProvider>
+            <Footer />
         </Box>
     );
 };
