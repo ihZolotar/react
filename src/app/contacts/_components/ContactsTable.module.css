@@ -1,0 +1,30 @@
+.tableRow {
+    height: 60px;
+}
+
+.actionButton {
+    border-radius: 8px;
+}
+
+.activeText {
+    display: inline;
+    margin-left: 8px;
+}
+
+.tableCellEmail,
+.tableCellPhone {
+    overflow-wrap: anywhere;
+}
+
+.mobileCard {
+    border-left: 4px solid transparent;
+}
+
+.mobileCard.active {
+    border-left-color: var(--mui-palette-success-main, #2e7d32);
+}
+
+.mobileCard.inactive {
+    border-left-color: var(--mui-palette-action-disabled, #bdbdbd);
+    opacity: 0.75;
+}
