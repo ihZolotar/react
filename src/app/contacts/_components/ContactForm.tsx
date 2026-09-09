@@ -1,10 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useId } from 'react';
 import { TextField, Box } from '@mui/material';
 import { FormikProps } from 'formik';
 import { ContactDraft } from '@/types';
-import styles from './AddContactForm.module.css';
+import styles from './ContactForm.module.css';
 
 interface ContactFormProps {
     formik: FormikProps<ContactDraft>;
@@ -12,13 +12,14 @@ interface ContactFormProps {
 
 const ContactForm: React.FC<ContactFormProps> = ({ formik }) => {
     const { values, errors, touched, handleChange, handleBlur } = formik;
+    const fieldId = useId();
 
     return (
         <Box className={styles.dialogContent}>
             <TextField
                 fullWidth
                 margin="normal"
-                id="first_name"
+                id={`${fieldId}-first_name`}
                 name="first_name"
                 label="First Name"
                 value={values.first_name}
@@ -31,7 +32,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ formik }) => {
             <TextField
                 fullWidth
                 margin="normal"
-                id="last_name"
+                id={`${fieldId}-last_name`}
                 name="last_name"
                 label="Last Name"
                 value={values.last_name}
@@ -44,7 +45,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ formik }) => {
             <TextField
                 fullWidth
                 margin="normal"
-                id="email"
+                id={`${fieldId}-email`}
                 name="email"
                 label="Email"
                 type="email"
@@ -58,7 +59,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ formik }) => {
             <TextField
                 fullWidth
                 margin="normal"
-                id="phone"
+                id={`${fieldId}-phone`}
                 name="phone"
                 label="Phone"
                 value={values.phone}

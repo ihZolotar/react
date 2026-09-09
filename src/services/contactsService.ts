@@ -14,7 +14,7 @@ import {
     type FirestoreDataConverter,
 } from 'firebase/firestore';
 import { db, ensureSignedIn } from '@/utils/firebaseConfig';
-import { Contact } from '@/types';
+import { Contact, ContactDraft } from '@/types';
 
 const asString = (value: unknown): string => (typeof value === 'string' ? value : '');
 
@@ -60,7 +60,7 @@ const handleFirebaseError = (error: unknown, customMessage: string): Error => {
     return new Error(customMessage, { cause: error });
 };
 
-export const addContact = async (contact: Omit<Contact, 'id'>): Promise<Contact> => {
+export const addContact = async (contact: ContactDraft): Promise<Contact> => {
     try {
         await ensureSignedIn();
 
@@ -105,12 +105,12 @@ export const getContactById = async (id: string): Promise<Contact | null> => {
     }
 };
 
-export const updateContact = async (id: string, updatedData: Partial<Contact>): Promise<void> => {
+export const updateContact = async (id: string, changes: Partial<ContactDraft>): Promise<void> => {
     try {
         await ensureSignedIn();
 
         await updateDoc(contactDocRef(id), {
-            ...updatedData,
+            ...changes,
             updated_at: new Date().toISOString(),
         });
     } catch (error) {

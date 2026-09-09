@@ -2,6 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import {
     addContact as addContactToFirestore,
     deleteContact as deleteContactFromFirestore,
+    getContactById,
     getContacts,
     updateContact as updateContactInFirestore,
 } from '@/services/contactsService';
@@ -26,6 +27,17 @@ export const fetchContacts = createAsyncThunk<Contact[], FetchContactsArg, Thunk
     },
     {
         condition: (_arg, { getState }) => getState().contacts.listStatus !== 'pending',
+    }
+);
+
+export const fetchContactById = createAsyncThunk<Contact | null, ContactIdArg, ThunkConfig>(
+    'contacts/fetchContactById',
+    async ({ id }, { rejectWithValue }) => {
+        try {
+            return await getContactById(id);
+        } catch (error) {
+            return rejectWithValue(toErrorMessage(error, `Failed to get contact with id ${id}`));
+        }
     }
 );
 
@@ -77,7 +89,7 @@ export const toggleContactActive = createAsyncThunk<UpdateContactArg, ContactIdA
 
         try {
             return await dispatch(
-                updateContact({ id, changes: { active: !contact.active } })
+                updateContact({ id, changes: { active: !contact.active }, optimistic: true })
             ).unwrap();
         } catch (error) {
             return rejectWithValue(toErrorMessage(error, 'Failed to update contact status'));

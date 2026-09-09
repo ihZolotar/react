@@ -18,7 +18,13 @@ const db = getFirestore(app);
 let signInPromise: Promise<void> | null = null;
 
 export const ensureSignedIn = (): Promise<void> => {
-    signInPromise ??= signInAnonymously(auth).then(() => undefined);
+    signInPromise ??= signInAnonymously(auth)
+        .then(() => undefined)
+        .catch((error: unknown) => {
+            signInPromise = null;
+
+            throw error;
+        });
 
     return signInPromise;
 };

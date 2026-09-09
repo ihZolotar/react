@@ -23,6 +23,7 @@ export interface ContactIdArg {
 
 export interface UpdateContactArg extends ContactIdArg {
     changes: Partial<ContactDraft>;
+    optimistic?: boolean;
 }
 
 export type SortField = 'first_name' | 'last_name' | 'email' | 'phone';

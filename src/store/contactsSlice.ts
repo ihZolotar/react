@@ -2,6 +2,7 @@ import { createSlice, isAnyOf, type PayloadAction } from '@reduxjs/toolkit';
 import {
     addContact,
     deleteContact,
+    fetchContactById,
     fetchContacts,
     updateContact,
 } from './contactsThunks';
@@ -16,6 +17,7 @@ interface ContactsState {
     listError: string | null;
     createStatus: RequestStatus;
     pendingIds: Record<string, boolean>;
+    rollbackById: Record<string, Contact | undefined>;
     mutationError: string | null;
 }
 
@@ -28,6 +30,7 @@ const initialState: ContactsState = {
     listError: null,
     createStatus: 'idle',
     pendingIds: {},
+    rollbackById: {},
     mutationError: null,
 };
 
@@ -77,6 +80,20 @@ const contactsSlice = createSlice({
                 state.listStatus = 'failed';
                 state.listError = action.payload ?? 'Failed to fetch contacts';
             })
+            .addCase(fetchContactById.fulfilled, (state, action) => {
+                if (action.payload === null) {
+                    return;
+                }
+
+                const contact = action.payload;
+                const index = state.items.findIndex((item) => item.id === contact.id);
+
+                if (index === -1) {
+                    state.items.push(contact);
+                } else {
+                    state.items[index] = contact;
+                }
+            })
             .addCase(addContact.pending, (state) => {
                 state.createStatus = 'pending';
                 state.mutationError = null;
@@ -88,6 +105,22 @@ const contactsSlice = createSlice({
             .addCase(addContact.rejected, (state) => {
                 state.createStatus = 'failed';
             })
+            .addCase(updateContact.pending, (state, action) => {
+                const { id, changes, optimistic } = action.meta.arg;
+
+                if (optimistic !== true) {
+                    return;
+                }
+
+                const contact = state.items.find((item) => item.id === id);
+
+                if (!contact) {
+                    return;
+                }
+
+                state.rollbackById[id] = { ...contact };
+                Object.assign(contact, changes);
+            })
             .addCase(updateContact.fulfilled, (state, action) => {
                 const { id, changes } = action.payload;
                 const contact = state.items.find((item) => item.id === id);
@@ -95,6 +128,19 @@ const contactsSlice = createSlice({
                 if (contact) {
                     Object.assign(contact, changes);
                 }
+
+                delete state.rollbackById[id];
+            })
+            .addCase(updateContact.rejected, (state, action) => {
+                const { id } = action.meta.arg;
+                const snapshot = state.rollbackById[id];
+                const contact = state.items.find((item) => item.id === id);
+
+                if (snapshot && contact) {
+                    Object.assign(contact, snapshot);
+                }
+
+                delete state.rollbackById[id];
             })
             .addCase(deleteContact.fulfilled, (state, action) => {
                 state.items = state.items.filter((item) => item.id !== action.payload);

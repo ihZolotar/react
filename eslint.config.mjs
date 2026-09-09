@@ -36,11 +36,4 @@ export default defineConfig([
             '@typescript-eslint/no-unused-vars': ['warn'],
         },
     },
-
-    {
-        files: ['src/context/**'],
-        rules: {
-            'react-hooks/set-state-in-effect': 'warn',
-        },
-    },
 ]);
